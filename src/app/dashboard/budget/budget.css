@@ -182,6 +182,27 @@
 .group-header-row {
   background: var(--color-surface);
   font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.group-header-row:hover {
+  background: var(--color-surface-hover);
+}
+
+.group-header-indicator {
+  position: absolute;
+  top: 15%;
+  left: 0;
+  bottom: 15%;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .summary-row {

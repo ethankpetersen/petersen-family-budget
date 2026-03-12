@@ -177,23 +177,22 @@
   margin-bottom: var(--space-8);
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
 
 .brandLogo {
   width: 36px;
   height: 36px;
-  background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: var(--text-xs);
-  color: white;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+  flex-shrink: 0;
+}
+
+.logoImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brandText {

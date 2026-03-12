@@ -147,7 +147,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className={styles.sidebarContent}>
           <div className={styles.brand}>
-            <div className={styles.brandLogo}>Vault</div>
+            <div className={styles.brandLogo}>
+              <img src="/Images/FamilyLogo.png" alt="Family Logo" className={styles.logoImage} />
+            </div>
             <span className={styles.brandText}>Petersen Family</span>
           </div>
 
