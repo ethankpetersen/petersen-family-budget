@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper function to check if user belongs to the requested household
+    function belongsToHousehold(householdId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.householdId == householdId;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Households Collection
+    match /households/{householdId} {
+      allow create: if isAuthenticated();
+      // Only members of the household can read or update it
+      allow read, update: if belongsToHousehold(householdId);
+    }
+
+    // Transactions Collection
+    match /transactions/{transactionId} {
+      // Allow read/write if the transaction belongs to the user's household
+      // We assume transactions store a `householdId` field
+      allow read, create, update, delete: if isAuthenticated() && 
+                                             request.resource.data.householdId != null &&
+                                             belongsToHousehold(request.resource.data.householdId);
+       
+      // For read/update/delete existing docs
+      allow read, update, delete: if isAuthenticated() && 
+                                     belongsToHousehold(resource.data.householdId);
+    }
+
+    // Budgets Collection
+    match /budgets/{budgetId} {
+      allow read, write: if isAuthenticated() && belongsToHousehold(resource.data.householdId);
+      allow create: if isAuthenticated() && belongsToHousehold(request.resource.data.householdId);
+    }
+
+    // Categories Collection
+    match /categories/{categoryId} {
+      allow read, write: if isAuthenticated() && belongsToHousehold(resource.data.householdId);
+      allow create: if isAuthenticated() && belongsToHousehold(request.resource.data.householdId);
+    }
+  }
+}

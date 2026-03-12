@@ -1,0 +1,126 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-4);
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.header h1 {
+  font-size: var(--text-2xl);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.fab {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-fast);
+}
+
+.fab:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stickyFab {
+  width: 100%;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: var(--text-lg);
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-fast);
+}
+
+.stickyFab:active {
+  transform: scale(0.98);
+}
+
+.main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 80px; /* Space for sticky button on mobile */
+}
+
+.stickyFabContainer {
+  display: none; /* Hidden by default on desktop */
+}
+
+@media (max-width: 768px) {
+  .stickyFabContainer {
+    display: block;
+    position: fixed;
+    bottom: 64px; /* Height of bottom nav */
+    left: 0;
+    right: 0;
+    padding: var(--space-4);
+    background: linear-gradient(to top, var(--color-base) 80%, transparent);
+    z-index: 40;
+  }
+
+  .main {
+    padding-bottom: 100px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-4);
+    margin-top: 0;
+  }
+
+  .header h1 {
+    display: none; /* User: "get rid of the word transaction" */
+  }
+
+  .headerActions {
+    justify-content: space-between;
+    width: 100%;
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .headerActions > :first-child {
+    flex: 2;
+  }
+
+  .headerActions > :nth-child(2) {
+    flex: 1;
+  }
+
+  .fab {
+    display: none; /* Hide the header version on mobile */
+  }
+}

@@ -1,0 +1,190 @@
+.budget-page {
+  padding: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .budget-page {
+    padding: 2rem;
+  }
+}
+
+.budget-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .budget-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+}
+
+.budget-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-surface);
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-surface-hover);
+  box-shadow: var(--shadow-sm);
+  width: fit-content;
+}
+
+/* Fix for buttons not working on desktop */
+.budget-controls button svg {
+  pointer-events: none;
+}
+
+.month-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--color-base);
+  padding: 0.25rem;
+  border-radius: var(--radius-md);
+}
+
+.month-selector span {
+  font-weight: 600;
+  min-width: 130px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.month-selector button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.month-selector button:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.controls-divider {
+  height: 24px;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 0.25rem;
+}
+
+.btn-copy, .btn-delete {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  height: 38px;
+  border-radius: var(--radius-md);
+}
+
+.btn-copy {
+  padding: 0 1rem;
+  gap: 0.5rem;
+  background: var(--color-surface-hover);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-copy:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.btn-delete {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  background: var(--color-surface-hover);
+  color: var(--color-text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 640px) {
+  .btn-text {
+    display: none;
+  }
+  .btn-copy {
+    width: 38px;
+    padding: 0;
+  }
+}
+
+.budget-grid-container {
+  overflow-x: auto;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-surface-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.budget-grid {
+  min-width: 600px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.budget-grid th,
+.budget-grid td {
+  padding: 1rem;
+  text-align: right;
+  border-bottom: 1px solid var(--color-surface-hover);
+}
+
+.budget-grid th:first-child,
+.budget-grid td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+.budget-grid thead th {
+  background: var(--color-surface-hover);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+}
+
+.text-positive { color: #34d399; }
+.text-negative { color: #f87171; }
+.text-neutral { color: #94a3b8; }
+
+.group-header-row {
+  background: var(--color-surface);
+  font-weight: 600;
+}
+
+.summary-row {
+  background: var(--color-surface-hover);
+  font-weight: 700;
+}
