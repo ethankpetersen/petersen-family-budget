@@ -17,7 +17,7 @@ export function UserManager() {
   const [invitations, setInvitations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteStatus, setInviteStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<{ type: 'success' | 'error', msg: string, link?: string } | null>(null);
 
   useEffect(() => {
     let unsubscribeMembers: () => void;
@@ -55,17 +55,25 @@ export function UserManager() {
     if (!inviteEmail || !householdId) return;
 
     try {
-      // Simulate creating an invite record
-      // User can sign up with this code, or we just record it.
+      // Generate a secure token
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      
       await addDoc(collection(db, 'invitations'), {
         email: inviteEmail,
         householdId: householdId,
         invitedBy: user?.uid,
         status: 'pending',
+        token: token,
         createdAt: Date.now()
       });
       
-      setInviteStatus({ type: 'success', msg: `Invitation recorded for ${inviteEmail}. They can now sign up and will be joined to this household.` });
+      const inviteLink = `${window.location.origin}/?invite=${token}`;
+      
+      setInviteStatus({ 
+        type: 'success', 
+        msg: `Invitation created for ${inviteEmail}! Share the link below with them:`,
+        link: inviteLink
+      });
       setInviteEmail('');
     } catch (err) {
       console.error("Error creating invite:", err);
@@ -124,7 +132,22 @@ export function UserManager() {
       
       {inviteStatus && (
         <div className={`p-3 mt-2 mb-4 text-sm rounded ${inviteStatus.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {inviteStatus.msg}
+          <p>{inviteStatus.msg}</p>
+          {inviteStatus.link && (
+            <div className="mt-2 flex gap-2">
+              <input type="text" readOnly value={inviteStatus.link} className="flex-1 p-2 text-sm border rounded bg-white text-gray-800" />
+              <button 
+                type="button"
+                className="px-3 py-1 bg-green-200 text-green-900 rounded hover:bg-green-300 transition-colors text-xs font-medium" 
+                onClick={() => {
+                  navigator.clipboard.writeText(inviteStatus.link!);
+                  alert('Link copied to clipboard!');
+                }}
+              >
+                Copy
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -172,6 +195,25 @@ export function UserManager() {
                       <span className="text-xs text-muted">
                         Invited {new Date(invite.createdAt).toLocaleDateString()}
                       </span>
+                      {invite.token && typeof window !== 'undefined' && (
+                        <div className="flex gap-2 items-center mt-1 w-full max-w-sm">
+                           <input 
+                             type="text" 
+                             readOnly 
+                             value={`${window.location.origin}/?invite=${invite.token}`} 
+                             className="text-xs p-1 border rounded flex-1 text-gray-600 bg-gray-50 bg-opacity-50" 
+                           />
+                           <button 
+                             onClick={() => {
+                               navigator.clipboard.writeText(`${window.location.origin}/?invite=${invite.token}`);
+                               alert('Link copied to clipboard!');
+                             }} 
+                             className="text-xs text-emerald-600 hover:text-emerald-700 font-medium px-2 py-1 rounded border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                           >
+                             Copy
+                           </button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="item-actions">

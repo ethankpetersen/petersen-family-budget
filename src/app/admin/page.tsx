@@ -28,6 +28,7 @@ export default function AdminDashboard() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const [platformInvites, setPlatformInvites] = useState<any[]>([]);
   const [copySuccessId, setCopySuccessId] = useState<string | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<{ type: 'success' | 'error', msg: string, link?: string } | null>(null);
 
   // Custom Modal State
   const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string, type: 'household' | 'invitation' } | null>(null);
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
     if (!inviteEmail.trim() || sendingInvite) return;
 
     setSendingInvite(true);
+    setInviteStatus(null);
     try {
       const inviteToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
       await addDoc(collection(db, 'platformInvitations'), {
@@ -105,10 +107,18 @@ export default function AdminDashboard() {
         status: 'pending',
         createdAt: serverTimestamp(),
       });
+      
+      const inviteLink = `${window.location.origin}/?platformInvite=${inviteToken}`;
+      
+      setInviteStatus({ 
+        type: 'success', 
+        msg: `Platform invitation created for ${inviteEmail.trim()}! Share the link below:`,
+        link: inviteLink
+      });
       setInviteEmail('');
     } catch (error) {
       console.error("Error sending platform invite:", error);
-      alert("Failed to send invitation.");
+      setInviteStatus({ type: 'error', msg: 'Failed to create platform invitation.' });
     } finally {
       setSendingInvite(false);
     }
@@ -270,6 +280,28 @@ export default function AdminDashboard() {
                     {sendingInvite ? 'Generating...' : 'Generate Invite Link'}
                   </button>
                 </form>
+
+                {inviteStatus && (
+                  <div className={`p-3 mt-4 text-sm rounded ${inviteStatus.type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'}`} style={{ marginTop: '1rem' }}>
+                    <p>{inviteStatus.msg}</p>
+                    {inviteStatus.link && (
+                      <div className="mt-2 flex gap-2" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
+                        <input type="text" readOnly value={inviteStatus.link} className="flex-1 p-2 text-sm border rounded bg-white text-gray-800" style={{ flex: 1, padding: '0.5rem', borderRadius: '0.25rem', border: '1px solid #ccc' }} />
+                        <button 
+                          type="button"
+                          className="px-3 py-1 bg-green-200 text-green-900 rounded hover:bg-green-300 transition-colors text-xs font-medium" 
+                          style={{ padding: '0.25rem 0.75rem', backgroundColor: '#a7f3d0', color: '#064e3b', borderRadius: '0.25rem', cursor: 'pointer', border: 'none', fontWeight: 500 }}
+                          onClick={() => {
+                            navigator.clipboard.writeText(inviteStatus.link!);
+                            alert('Link copied to clipboard!');
+                          }}
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </section>

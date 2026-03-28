@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { signIn, signUp } from '@/lib/firebase/auth';
 import { db } from '@/lib/firebase/config';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, setDoc } from 'firebase/firestore';
 import styles from './LoginForm.module.css';
 
 export default function LoginForm() {
@@ -13,29 +13,57 @@ export default function LoginForm() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  
   const searchParams = useSearchParams();
-  const inviteToken = searchParams.get('platformInvite');
+  const platformInviteToken = searchParams.get('platformInvite');
+  const householdInviteToken = searchParams.get('invite');
+  
   const [inviteId, setInviteId] = useState<string | null>(null);
+  const [inviteType, setInviteType] = useState<'platform' | 'household' | null>(null);
+  const [householdData, setHouseholdData] = useState<any>(null);
 
   useEffect(() => {
-    if (inviteToken) {
-      const checkInvite = async () => {
+    if (platformInviteToken) {
+      const checkPlatformInvite = async () => {
         try {
-          const q = query(collection(db, 'platformInvitations'), where('token', '==', inviteToken), where('status', '==', 'pending'));
+          const q = query(collection(db, 'platformInvitations'), where('token', '==', platformInviteToken), where('status', '==', 'pending'));
           const snapshot = await getDocs(q);
           if (!snapshot.empty) {
             const inviteData = snapshot.docs[0].data();
             setEmail(inviteData.email);
             setInviteId(snapshot.docs[0].id);
+            setInviteType('platform');
             setIsSignUp(true);
+          } else {
+            setError('Invalid or expired platform invitation.');
           }
         } catch (error) {
           console.error("Error checking platform invite:", error);
         }
       };
-      checkInvite();
+      checkPlatformInvite();
+    } else if (householdInviteToken) {
+      const checkHouseholdInvite = async () => {
+        try {
+          const q = query(collection(db, 'invitations'), where('token', '==', householdInviteToken), where('status', '==', 'pending'));
+          const snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+            const inviteData = snapshot.docs[0].data();
+            setEmail(inviteData.email);
+            setInviteId(snapshot.docs[0].id);
+            setHouseholdData(inviteData);
+            setInviteType('household');
+            setIsSignUp(true);
+          } else {
+            setError('Invalid or expired household invitation link.');
+          }
+        } catch (error) {
+          console.error("Error checking household invite:", error);
+        }
+      };
+      checkHouseholdInvite();
     }
-  }, [inviteToken]);
+  }, [platformInviteToken, householdInviteToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,18 +74,40 @@ export default function LoginForm() {
       if (isSignUp) {
         const userCredential = await signUp(email, password);
         
-        // If it was an invite, mark it as accepted
-        if (inviteId) {
+        if (inviteType === 'platform' && inviteId) {
           await updateDoc(doc(db, 'platformInvitations', inviteId), {
             status: 'accepted',
             acceptedAt: new Date(),
             userId: userCredential.user.uid
           });
 
-          // Mark user as invited in their own document
-          await updateDoc(doc(db, 'users', userCredential.user.uid), {
-            isInvited: true
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            email: email,
+            role: 'admin',
+            isInvited: true,
+            createdAt: Date.now()
+          }, { merge: true });
+        } else if (inviteType === 'household' && inviteId && householdData) {
+          await updateDoc(doc(db, 'invitations', inviteId), {
+            status: 'accepted',
+            acceptedAt: Date.now(),
+            userId: userCredential.user.uid
           });
+
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            email: email,
+            householdId: householdData.householdId,
+            role: 'member',
+            isInvited: true,
+            createdAt: Date.now()
+          }, { merge: true });
+        } else {
+          // General sign up without any invitation
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            email: email,
+            role: 'admin', 
+            createdAt: Date.now()
+          }, { merge: true });
         }
       } else {
         await signIn(email, password);
@@ -94,6 +144,8 @@ export default function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            readOnly={!!inviteId}
+            className={inviteId ? styles.readOnlyInput : ''}
           />
         </div>
 
@@ -110,28 +162,16 @@ export default function LoginForm() {
         </div>
 
         <button type="submit" disabled={loading} className={styles.button}>
-          {loading ? 'Authenticating...' : (isSignUp ? 'Create Admin Account' : 'Sign In')}
+          {loading ? 'Authenticating...' : (isSignUp ? 'Create Account' : 'Sign In')}
         </button>
 
-        {inviteId && isSignUp && (
-          <button 
-            type="button" 
-            className={styles.toggleButton} 
-            onClick={() => setIsSignUp(false)}
-          >
-            Already have an account? Sign In
-          </button>
-        )}
-
-        {!inviteId && isSignUp && (
-          <button 
-            type="button" 
-            className={styles.toggleButton} 
-            onClick={() => setIsSignUp(false)}
-          >
-            Already have an account? Sign In
-          </button>
-        )}
+        <button 
+          type="button" 
+          className={styles.toggleButton} 
+          onClick={() => setIsSignUp(!isSignUp)}
+        >
+          {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+        </button>
       </form>
     </div>
   );
